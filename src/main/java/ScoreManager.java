@@ -25,14 +25,17 @@ public class ScoreManager {
 
         for (int round = 0; round < roundPatternList.length; round++) {
             String[] roundPattern = roundPatternList[round].split(" ");
+            checkRoundPatternIllegal(roundPattern);
+            String ballOne = roundPattern[0];
+            String ballTwo = roundPattern.length == 2 ? roundPattern[1] : null;
             if (round == 9) {
                 totalScore += calculateLastRound(roundPattern);
             } else {
-                if (roundPattern.length == 2) {
-                    if (roundPattern[1].equals("/")) {
+                if (ballTwo != null) {
+                    if (ballTwo.equals("/")) {
                         totalScore += 10 + calculateBonus(roundPatternList, round, 1);
                     } else {
-                        totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
+                        totalScore = totalScore + Integer.parseInt(ballOne) + Integer.parseInt(ballTwo);
                     }
                 } else {
                     totalScore += 10 + calculateBonus(roundPatternList, round, 2);
@@ -89,5 +92,13 @@ public class ScoreManager {
             }
         }
         return result;
+    }
+
+    private void checkRoundPatternIllegal(String[] roundPattern) throws Exception {
+        if (roundPattern.length == 2 && !roundPattern[1].equals("/")) {
+            if (Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]) > 9) {
+                throw new Exception("score out of 9!");
+            }
+        }
     }
 }
