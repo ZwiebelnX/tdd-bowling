@@ -16,7 +16,7 @@ public class ScoreManager {
      */
     public int calculateScore(String pattern) throws Exception {
         if (!pattern.matches("((X|[0-9]\\s[0-9]|[0-9]\\s/);){9}" +
-            "(X\\sX\\sX\\s|X\\sX\\s[0-9]|X\\s[0-9]\\s/|X\\s[0-9]\\s[0-9]|[0-9]\\s[0-9])")) {
+            "(X\\sX\\sX|X\\sX\\s[0-9]|X\\s[0-9]\\s/|X\\s[0-9]\\s[0-9]|[0-9]\\s/\\s[0-9]|[0-9]\\s[0-9])")) {
             throw new Exception("pattern error!");
         }
 
@@ -68,6 +68,11 @@ public class ScoreManager {
         return result;
     }
 
+    /**
+     * 计算最后一轮的分数
+     * @param lastRoundPattern 最后一轮的分数表达式
+     * @return 最后一轮分数
+     */
     private int calculateLastRound(String[] lastRoundPattern) {
         int result = 0;
         if (lastRoundPattern.length == 2) {
@@ -78,6 +83,8 @@ public class ScoreManager {
                     result += 10;
                 } else if (lastRoundPattern[i].equals("/")) {
                     result += (10 - Integer.parseInt(lastRoundPattern[i - 1]));
+                } else {
+                    result += Integer.parseInt(lastRoundPattern[i]);
                 }
             }
         }
