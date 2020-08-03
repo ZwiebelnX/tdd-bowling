@@ -1,3 +1,8 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ScoreManager {
 
     /**
@@ -10,11 +15,52 @@ public class ScoreManager {
      */
     public int calculateScore(String pattern) {
         int totalScore = 0;
-        String[] roundStringList = pattern.split(";");
-        for (String s : roundStringList) {
-            String[] condition = s.split(" ");
-            totalScore = totalScore + Integer.parseInt(condition[0]) + Integer.parseInt(condition[1]);
+        String[] roundPatternList = pattern.split(";");
+
+        for (int round = 0; round < roundPatternList.length; round++) {
+            String[] roundPattern = roundPatternList[round].split(" ");
+            if (round == 9) {
+                if (roundPattern.length == 2) {
+                    totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
+                } else {
+                    for (int i = 0; i < roundPattern.length; i++) {
+                        if (roundPattern[i].equals("X")) {
+                            totalScore += 10;
+                        } else if (roundPattern[i].equals("/")) {
+                            totalScore += (10 - Integer.parseInt(roundPattern[i - 1]));
+                        }
+                    }
+                }
+            } else {
+                if (roundPattern.length == 2) {
+                    totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
+                } else {
+                    totalScore += 10 + calculateBonus(roundPatternList, round, 2);
+                }
+            }
         }
+
+
+
         return totalScore;
+    }
+
+    int calculateBonus(String[] roundPattern, int currentRound, int bonusBalls) {
+        int result = 0;
+        String[] subRoundPatternStrings = Arrays.copyOfRange(roundPattern, currentRound + 1, roundPattern.length);
+        List<String> subBallsPattern = Arrays.stream(subRoundPatternStrings)
+                                        .map(s -> s.split(" "))
+                                        .flatMap(Arrays::stream)
+                                        .collect(Collectors.toList());
+        for (int i = 0; i < bonusBalls; i++) {
+            if (subBallsPattern.get(i).equals("X")) {
+                result += 10;
+            } else if (subBallsPattern.get(i).equals("/")) {
+                result = result + (10 - Integer.parseInt(subBallsPattern.get(i - 1)));
+            } else {
+                result += Integer.parseInt(subBallsPattern.get(i));
+            }
+        }
+        return result;
     }
 }
