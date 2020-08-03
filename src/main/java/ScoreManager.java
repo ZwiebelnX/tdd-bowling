@@ -12,42 +12,46 @@ public class ScoreManager {
      *                  2. 特殊情况：英文大写字母X表示全中(strike)，斜杠/表示补中(spare)
      *                  3. 输入规则遵循保龄球规则
      * @return 根据规则计算的分数
+     * @throws Exception 输入不符合规范
      */
-    public int calculateScore(String pattern) {
+    public int calculateScore(String pattern) throws Exception {
+        if (!pattern.matches("((X|[0-9]\\s[0-9]|[0-9]\\s/);){9}" +
+            "(X\\sX\\sX\\s|X\\sX\\s[0-9]|X\\s[0-9]\\s/|X\\s[0-9]\\s[0-9]|[0-9]\\s[0-9])")) {
+            throw new Exception("pattern error!");
+        }
+
         int totalScore = 0;
         String[] roundPatternList = pattern.split(";");
 
         for (int round = 0; round < roundPatternList.length; round++) {
             String[] roundPattern = roundPatternList[round].split(" ");
             if (round == 9) {
-                if (roundPattern.length == 2) {
-                    totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
-                } else {
-                    for (int i = 0; i < roundPattern.length; i++) {
-                        if (roundPattern[i].equals("X")) {
-                            totalScore += 10;
-                        } else if (roundPattern[i].equals("/")) {
-                            totalScore += (10 - Integer.parseInt(roundPattern[i - 1]));
-                        }
-                    }
-                }
+                totalScore += calculateLastRound(roundPattern);
             } else {
                 if (roundPattern.length == 2) {
-                    totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
+                    if (roundPattern[1].equals("/")) {
+                        totalScore += 10 + calculateBonus(roundPatternList, round, 1);
+                    } else {
+                        totalScore = totalScore + Integer.parseInt(roundPattern[0]) + Integer.parseInt(roundPattern[1]);
+                    }
                 } else {
                     totalScore += 10 + calculateBonus(roundPatternList, round, 2);
                 }
             }
         }
-
-
-
         return totalScore;
     }
 
-    int calculateBonus(String[] roundPattern, int currentRound, int bonusBalls) {
+    /**
+     * 计算X或/带来的奖励分数
+     * @param roundPatternList 含有每轮比分表达式的数组
+     * @param currentRound 当前轮数
+     * @param bonusBalls 奖励球数
+     * @return 奖励分数
+     */
+    private int calculateBonus(String[] roundPatternList, int currentRound, int bonusBalls) {
         int result = 0;
-        String[] subRoundPatternStrings = Arrays.copyOfRange(roundPattern, currentRound + 1, roundPattern.length);
+        String[] subRoundPatternStrings = Arrays.copyOfRange(roundPatternList, currentRound + 1, roundPatternList.length);
         List<String> subBallsPattern = Arrays.stream(subRoundPatternStrings)
                                         .map(s -> s.split(" "))
                                         .flatMap(Arrays::stream)
@@ -59,6 +63,22 @@ public class ScoreManager {
                 result = result + (10 - Integer.parseInt(subBallsPattern.get(i - 1)));
             } else {
                 result += Integer.parseInt(subBallsPattern.get(i));
+            }
+        }
+        return result;
+    }
+
+    private int calculateLastRound(String[] lastRoundPattern) {
+        int result = 0;
+        if (lastRoundPattern.length == 2) {
+            result = Integer.parseInt(lastRoundPattern[0]) + Integer.parseInt(lastRoundPattern[1]);
+        } else {
+            for (int i = 0; i < lastRoundPattern.length; i++) {
+                if (lastRoundPattern[i].equals("X")) {
+                    result += 10;
+                } else if (lastRoundPattern[i].equals("/")) {
+                    result += (10 - Integer.parseInt(lastRoundPattern[i - 1]));
+                }
             }
         }
         return result;
